@@ -93,7 +93,7 @@ def main(config_params):
     config_params['trainable'] = True
     # Using hardcoded dataset percentage
     config_params['dataset_percentage'] = 100
-    print("Using the parameters :")
-    print(json.dumps(config_params, indent=2))
+    logger.info("Using the parameters :")
+    logger.info(json.dumps(config_params, indent=2))
 
     trainer(config_params)

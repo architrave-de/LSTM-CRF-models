@@ -124,7 +124,7 @@ def setup_NN(worker, x_in, u_in, mask_in, y_in, params, numTags, emb_w):
     crf_output = theano.function(
         [l_in.input_var, l_u_in.input_var, l_mask.input_var], eval_out)
     lstm_output = crf_output  # Included for future functionality
-    print(("output shape for theano net", lstm_output(x_in.astype(
+    logger.info(("output shape for theano net", lstm_output(x_in.astype(
         'int32'), u_in.astype('float32'), mask_in.astype('float32')).shape))
     eval_cost = T.mean((eval_out - t_out)**2)
 
@@ -175,7 +175,7 @@ def setup_NN(worker, x_in, u_in, mask_in, y_in, params, numTags, emb_w):
         t_out, axis=2)) * l_mask.input_var) / T.sum(l_mask.input_var)
     compute_acc = theano.function(
         [l_in.input_var, l_u_in.input_var, t_out, l_mask.input_var], acc_)
-    print(('Time to build and compile model {0}'.format(
+    logger.info(('Time to build and compile model {0}'.format(
         time.time() - premodel)))
 
     return {'crf_output': crf_output, 'lstm_output': lstm_output, 'train': train, 'compute_cost': compute_cost, 'compute_acc': compute_acc, 'compute_cost_loss': compute_cost_loss, 'compute_cost_regularization': compute_cost_regularization, 'final_layers': final_layers}

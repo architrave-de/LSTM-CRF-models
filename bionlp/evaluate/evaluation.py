@@ -20,7 +20,7 @@ def get_labels(label, predicted):
 def get_Approx_Metrics(y_true, y_pred, verbose=True, preMsg='', flat_list=False):
 
     if verbose:
-        print('------------------------ Approx Metrics---------------------------')
+        logger.info('------------------------ Approx Metrics---------------------------')
     if flat_list:
         z_true = y_true
         z_pred = y_pred
@@ -41,7 +41,7 @@ def get_Approx_Metrics(y_true, y_pred, verbose=True, preMsg='', flat_list=False)
     avg_recall = avg_precision = avg_f1 = 0.0
     for i in label_dict:
         if verbose:
-            print(("{5} The tag \'{0}\' has {1} elements and recall,precision,f1 ={3},{4}, {2}".format(
+            logger.info(("{5} The tag \'{0}\' has {1} elements and recall,precision,f1 ={3},{4}, {2}".format(
                 i, freq_dict[i], f1s[label_dict[i]], rs[label_dict[i]], ps[label_dict[i]], preMsg)))
         if i != 'None' and i != '|O':
             f1_none = f1_none + [(f1s[label_dict[i]], freq_dict[i]), ]
@@ -58,7 +58,7 @@ def get_Approx_Metrics(y_true, y_pred, verbose=True, preMsg='', flat_list=False)
     else:
         avg_f1 = 0.0
     if verbose:
-        print(("All medical tags collectively have {0} elements and recall,precision,f1 ={1},{2}, {3}".format(
+        logger.info(("All medical tags collectively have {0} elements and recall,precision,f1 ={1},{2}, {3}".format(
             intermediate_sum, avg_recall, avg_precision, avg_f1)))
     return avg_f1
 
@@ -67,14 +67,14 @@ def get_ConfusionMatrix(true, predicted):
     # Confusion Matrix is only valid for partial evaluation.
     true_chain = list(itertools.chain.from_iterable(true))
     predicted_chain = list(itertools.chain.from_iterable(predicted))
-    print(("Confusion Matrix of combined folds (partial evaluation)\n{0}".format(
+    logger.info(("Confusion Matrix of combined folds (partial evaluation)\n{0}".format(
         ConfusionMatrix(true_chain, predicted_chain))))
 
 
 def get_Exact_Metrics(true, predicted, verbose=True):
     true, predicted = strip_BIO(true, predicted)
     if verbose:
-        print('------------------------ Exact Metrics---------------------------')
+        logger.info('------------------------ Exact Metrics---------------------------')
         get_ConfusionMatrix(true, predicted)
     labels = get_labels(true, predicted)
     true_positive = {label: 0 for label in labels}
@@ -144,7 +144,7 @@ def get_Exact_Metrics(true, predicted, verbose=True):
             avg_precision += float(trues[l]) * float(precision)
             num_candidates += trues[l]
         if verbose:
-            print(("The tag \'{0}\' has {1} elements and recall,precision,f1 ={2},{3}, {4}".format(
+            logger.info(("The tag \'{0}\' has {1} elements and recall,precision,f1 ={2},{3}, {4}".format(
                 l, trues[l], recall, precision, f1)))
     if num_candidates > 0:
         avg_recall = float(avg_recall) / float(num_candidates)
@@ -154,7 +154,7 @@ def get_Exact_Metrics(true, predicted, verbose=True):
         avg_f1 = 2.0 * float(avg_precision) * float(avg_recall) / \
             (float(avg_recall) + float(avg_precision))
     if verbose:
-        print(("All medical tags collectively have {0} elements and recall,precision,f1 ={1},{2}, {3}".format(
+        logger.info(("All medical tags collectively have {0} elements and recall,precision,f1 ={1},{2}, {3}".format(
             num_candidates, avg_recall, avg_precision, avg_f1)))
     return avg_f1
 

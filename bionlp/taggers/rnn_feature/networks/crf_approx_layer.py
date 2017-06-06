@@ -78,7 +78,7 @@ def constructApproximations(unary, pairwise, t_out, numTags, params, x_in, u_in,
         [forward1, backward1], trainable=True)
     num_params = lasagne.layers.count_params(
         [forward1, backward1], trainable=True)
-    print('Number of parameters: {0}'.format(num_params))
+    logger.info('Number of parameters: {0}'.format(num_params))
 
     return training_p, eval_p, approx_params, forward_l + backward_l, [forward1, backward1]
 
@@ -106,7 +106,7 @@ def get_crf_training_loss(Inference_Layer, pairwise, t_out, numTags, params, x_i
     unary_sequence = t_out.dimshuffle(1, 0, 2)
     mask_out = mask_out.dimshuffle(1, 0)
     m_out_f = theano.function([l_mask.input_var], mask_out)
-    print("rearranged output shape for mask",
+    logger.info("rearranged output shape for mask",
           m_out_f(mask_in.astype('float32')).shape)
 
     def pairwise_collector(yprev, ycurrent, Wp):
