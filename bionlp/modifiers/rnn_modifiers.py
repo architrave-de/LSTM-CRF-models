@@ -45,7 +45,7 @@ def construct_umls_rnn_features(dataset, umls_type_vocab=None):
     assert 'SURFACE' in dataset.value[0].value[0].value[
         0].attr, 'add_surface_feature_list() should be called before construct_umls_rnn_features()'
     if umls_type_vocab is None:
-        logging.info(
+        logger.info(
             'Vocabulary for semantic types not provided. Scanning for all UMLS Semantic Types')
         type_vocab = set()
         for document in tqdm(dataset.value):
@@ -54,7 +54,7 @@ def construct_umls_rnn_features(dataset, umls_type_vocab=None):
                     type_vocab = type_vocab.union(set(token.attr['umls_type']))
         type_vocab = {umty: idxs for idxs, umty in enumerate(list(type_vocab))}
     else:
-        logging.info(
+        logger.info(
             'Using vocabulary for UMLS semantic type that was provided in dataset object')
         type_vocab = umls_type_vocab
 
