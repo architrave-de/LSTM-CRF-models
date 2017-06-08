@@ -1,4 +1,7 @@
 #### Taken from: https://gist.github.com/ebenolson/1682625dc9823e27d771
+#### Requires globally installed graphviz and Python package pydot3
+# sudo apt-get install graphviz
+# pip install pydot3
 
 """
 Functions to create network diagrams from a list of Layers.
@@ -122,9 +125,9 @@ def draw_to_file(layers, filename, **kwargs):
         - **kwargs: see docstring of get_pydot_graph for other options
     """
     dot = get_pydot_graph(layers, **kwargs)
-
+    
     ext = filename[filename.rfind('.') + 1:]
-    with open(filename, 'w') as fid:
+    with open(filename, 'wb') as fid:
         fid.write(dot.create(format=ext))
 
 
