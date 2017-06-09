@@ -26,35 +26,35 @@ def setup_NN(worker, x_in, u_in, mask_in, y_in, params, numTags, emb_w):
     premodel = time.time()
 
     l_in = lasagne.layers.InputLayer(
-        shape=(None, params['maxlen'], 1), input_var=xt.astype('int32'))
+        shape=(None, params['maxlen'], 1), input_var=xt.astype('int32'), name="l_in")
     l_u_in = lasagne.layers.InputLayer(
-        shape=(None, params['maxlen'], u_in.shape[2]))
-    l_mask = lasagne.layers.InputLayer(shape=(None, params['maxlen']))
+        shape=(None, params['maxlen'], u_in.shape[2]), name="l_u_in")
+    l_mask = lasagne.layers.InputLayer(shape=(None, params['maxlen']), name="l_mask")
     #---------- Replaced -------------
 
-    l_u_reshape = lasagne.layers.ReshapeLayer(l_u_in, (-1, u_in.shape[2]))
+    l_u_reshape = lasagne.layers.ReshapeLayer(l_u_in, (-1, u_in.shape[2]), name="l_u_reshape")
     l_e_out = lasagne.layers.get_output(l_u_reshape)
     l_o_f = theano.function([l_u_in.input_var], l_e_out)
     logger.info("output shape for reshaped feature net = {0}".format(
         l_o_f(u_in.astype('float32')).shape))
     logger.info('Using {0} dimensional layer for extra features'.format(
         params['feature1']))
-    l_u_dense = lasagne.layers.DenseLayer(l_u_reshape, params['feature1'])
+    l_u_dense = lasagne.layers.DenseLayer(l_u_reshape, params['feature1'], name="l_u_dense")
     l_u_proc = lasagne.layers.ReshapeLayer(
-        l_u_dense, (batch_size, params['maxlen'], 1, params['feature1']))
+        l_u_dense, (batch_size, params['maxlen'], 1, params['feature1']), name="l_u_proc")
     if params['word2vec'] == 1:
         l_emb = lasagne.layers.EmbeddingLayer(
-            l_in, emb_w.shape[0], emb_w.shape[1], W=emb_w.astype('float32'))
+            l_in, emb_w.shape[0], emb_w.shape[1], W=emb_w.astype('float32'), name="l_emb")
         l_emb.add_param(l_emb.W, l_emb.W.get_value().shape,
                         trainable=params['emb1'])
     else:
         l_emb = lasagne.layers.EmbeddingLayer(
-            l_in, emb_w.shape[0], emb_w.shape[1])
+            l_in, emb_w.shape[0], emb_w.shape[1], name="l_emb")
 
     if params['emb2'] > 0:
         l_emb1 = lasagne.layers.EmbeddingLayer(
-            l_in, emb_w.shape[0], params['emb2'])
-        l_emb = lasagne.layers.ConcatLayer([l_emb, l_emb1], axis=3)
+            l_in, emb_w.shape[0], params['emb2'], name="l_emb1")
+        l_emb = lasagne.layers.ConcatLayer([l_emb, l_emb1], axis=3, name="l_emb")
 
     l_e_out = lasagne.layers.get_output(l_emb)
     l_p_out = lasagne.layers.get_output(l_u_proc)
@@ -65,7 +65,7 @@ def setup_NN(worker, x_in, u_in, mask_in, y_in, params, numTags, emb_w):
     logger.info("output shape for feature input={0}".format(
         l_p_f(u_in.astype('float32')).shape))
 
-    l_emb = lasagne.layers.ConcatLayer([l_emb, l_u_proc], axis=3)
+    l_emb = lasagne.layers.ConcatLayer([l_emb, l_u_proc], axis=3, name="l_emb")
     l_e_out = lasagne.layers.get_output(l_emb)
     l_o_f = theano.function([l_in.input_var, l_u_in.input_var], l_e_out)
     logger.info("output shape for emb+feature net={0}".format(
@@ -73,25 +73,25 @@ def setup_NN(worker, x_in, u_in, mask_in, y_in, params, numTags, emb_w):
 
     #-----------Replaced end ---------
 
-    dropout_backward = lasagne.layers.DropoutLayer(l_emb, params['noise1'])
-    dropout_forward = lasagne.layers.DropoutLayer(l_emb, params['noise1'])
+    dropout_backward = lasagne.layers.DropoutLayer(l_emb, params['noise1'], name="dropout_backward")
+    dropout_forward = lasagne.layers.DropoutLayer(l_emb, params['noise1'], name="dropout_forward")
 
     backward1 = lasagne.layers.LSTMLayer(dropout_backward, params['hidden1'], mask_input=l_mask, peepholes=False, forgetgate=lasagne.layers.Gate(
         b=lasagne.init.Constant(1.)), nonlinearity=lasagne.nonlinearities.tanh, backwards=True, precompute_input=True)
     forward1 = lasagne.layers.LSTMLayer(dropout_forward, params['hidden1'], mask_input=l_mask, peepholes=False, forgetgate=lasagne.layers.Gate(
         b=lasagne.init.Constant(1.)), nonlinearity=lasagne.nonlinearities.tanh, precompute_input=True)
 
-    crf_layer = lasagne.layers.ConcatLayer([forward1, backward1], axis=2)
+    crf_layer = lasagne.layers.ConcatLayer([forward1, backward1], axis=2, name="crf_layer")
 
     rlayer = lasagne.layers.ReshapeLayer(
-        crf_layer, (-1, params['hidden1'] * 2))
-    dropout1 = lasagne.layers.DropoutLayer(rlayer, p=params['noise1'])
+        crf_layer, (-1, params['hidden1'] * 2), name="rlayer")
+    dropout1 = lasagne.layers.DropoutLayer(rlayer, p=params['noise1'], name="dropout1")
     output_nonlinearity = lasagne.nonlinearities.tanh
     dense1 = lasagne.layers.DenseLayer(
-        dropout1, numTags, nonlinearity=output_nonlinearity)
+        dropout1, numTags, nonlinearity=output_nonlinearity, name="dense1")
     dense1 = lasagne.layers.batch_norm(dense1)
     crf_layer = lasagne.layers.ReshapeLayer(
-        dense1, (batch_size, params['maxlen'], numTags))
+        dense1, (batch_size, params['maxlen'], numTags), name="crf_layer")
 
     mid_out = lasagne.layers.get_output(crf_layer, deterministic=False)
     mid_output = theano.function(
@@ -99,7 +99,7 @@ def setup_NN(worker, x_in, u_in, mask_in, y_in, params, numTags, emb_w):
     logger.info("output shape for for unary potential layer {0}".format(mid_output(
         x_in.astype('int32'), u_in.astype('float32'), mask_in.astype('float32')).shape))
 
-    sum_layer = CRFLayer(crf_layer)
+    sum_layer = CRFLayer(crf_layer, name="sum_layer")
     crf_params = sum_layer.get_CRF_params()
     logger.info(
         '\'l2crf\' Regularization is applied to only to trainable parameter \'W_p\' in CRF')
