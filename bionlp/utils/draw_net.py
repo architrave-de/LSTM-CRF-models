@@ -20,6 +20,7 @@ Examples:
         return Image(dot.create_png())
 """
 
+import lasagne
 import pydot
 
 
@@ -52,12 +53,14 @@ def get_hex_color(layer_type):
         return '#{0:x}'.format(hash(layer_type) % 2**24)
 
 
-def get_pydot_graph(layers, output_shape=True, verbose=False):
+def get_pydot_graph(final_layer, output_shape=True, verbose=False):
     """
-    Creates a PyDot graph of the network defined by the given layers.
+    Creates a PyDot graph of the network defined by the layers retrieved
+    from the given final_layer.
     :parameters:
-        - layers : list
-            List of the layers, as obtained from lasange.layers.get_all_layers
+        - final_layer : lasagne.layers.base.Layer
+            Final layer of the neural net, from which a list of all
+            layers is obtained via lasange.layers.get_all_layers
         - output_shape: (default `True`)
             If `True`, the output shape of each layer will be displayed.
         - verbose: (default `False`)
@@ -68,6 +71,7 @@ def get_pydot_graph(layers, output_shape=True, verbose=False):
         - pydot_graph : PyDot object containing the graph
 
     """
+    layers = lasagne.layers.get_all_layers(final_layer)
     pydot_graph = pydot.Dot('Network', graph_type='digraph')
     pydot_nodes = {}
     pydot_edges = []
@@ -114,16 +118,18 @@ def get_pydot_graph(layers, output_shape=True, verbose=False):
     return pydot_graph
 
 
-def draw_to_file(layers, filename, **kwargs):
+def draw_to_file(final_layer, filename, **kwargs):
     """
     Draws a network diagram to a file
     :parameters:
-        - layers : list
-            List of the layers, as obtained from lasange.layers.get_all_layers
+        - final_layer : lasagne.layers.base.Layer
+            Final layer of the neural net, from which a list of all
+            layers is obtained via lasange.layers.get_all_layers
         - filename: string
             The filename to save output to.
         - **kwargs: see docstring of get_pydot_graph for other options
     """
+    layers = lasagne.layers.get_all_layers(final_layer)
     dot = get_pydot_graph(layers, **kwargs)
     
     ext = filename[filename.rfind('.') + 1:]
@@ -131,15 +137,17 @@ def draw_to_file(layers, filename, **kwargs):
         fid.write(dot.create(format=ext))
 
 
-def draw_to_notebook(layers, **kwargs):
+def draw_to_notebook(final_layer, **kwargs):
     """
     Draws a network diagram in an IPython notebook
     :parameters:
-        - layers : list
-            List of the layers, as obtained from lasange.layers.get_all_layers
+        - final_layer : lasagne.layers.base.Layer
+            Final layer of the neural net, from which a list of all
+            layers is obtained via lasange.layers.get_all_layers
         - **kwargs: see docstring of get_pydot_graph for other options
     """
     from IPython.display import Image  # needed to render in notebook
 
+    layers = lasagne.layers.get_all_layers(final_layer)
     dot = get_pydot_graph(layers, **kwargs)
     return Image(dot.create_png())
