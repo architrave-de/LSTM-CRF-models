@@ -50,7 +50,11 @@ def get_hex_color(layer_type):
     if 'Pool' in layer_type:
         return '#9D9DD2'
     else:
-        return '#{0:x}'.format(hash(layer_type) % 2**24)
+        # create a color from the hash of the class name, but make
+        # sure that it is relatively bright, so add half of the class
+        # name hash to #7F7F7F
+        layer_name_hash = (hash(layer_type) % 2**24) / 2
+        return "#{0:x}".format(int(layer_name_hash + float.fromhex("7F7F7F")))
 
 
 def get_pydot_graph(final_layer, output_shape=True, verbose=False):
