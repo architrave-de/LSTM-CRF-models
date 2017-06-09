@@ -8,6 +8,7 @@ import logging
 import sys
 import pickle
 import theano.tensor as T
+from bionlp.utils import draw_net
 from bionlp.utils.utils import theano_logsumexp
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -172,5 +173,8 @@ def setup_NN(worker, x_in, u_in, mask_in, y_in, params, numTags, emb_w):
         [l_in.input_var, l_u_in.input_var, t_out, l_mask.input_var], acc_)
     print(('Time to build and compile model {0}'.format(
         time.time() - premodel)))
+
+    # create graphic of complete neural network
+    # draw_net.draw_to_file(crf_layer, 'approx_network.pdf', output_shape=False, verbose=True)
 
     return {'crf_output': crf_output, 'lstm_output': lstm_output, 'train': train, 'compute_cost': compute_cost, 'compute_acc': compute_acc, 'compute_cost_loss': compute_cost_loss, 'compute_cost_regularization': compute_cost_regularization, 'final_layers': final_layers}
