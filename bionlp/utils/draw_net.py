@@ -23,14 +23,43 @@ Examples:
 import lasagne
 import pydot
 
+from bionlp.taggers.rnn_feature.networks.crf_dual_layer import DualCRFLayer
 
-def get_hex_color(layer_type):
+def get_general_attributes():
+    return ['name', 'shape']
+
+def get_class_attributes(layer):
+    if isinstance(layer, lasagne.layers.EmbeddingLayer):
+        return ['input_size', 'output_size']
+    if isinstance(layer, lasagne.layers.DenseLayer):
+        return ['num_units', 'nonlinearity', 'num_leading_axes']
+    if isinstance(layer, lasagne.layers.ConcatLayer):
+        return ['axis', 'cropping']
+    if isinstance(layer, lasagne.layers.DropoutLayer):
+        return ['p', 'rescale', 'shared_axes']
+    if isinstance(layer, lasagne.layers.LSTMLayer):
+        return ['num_units', 'nonlinearity', 'backwards', 'learn_init',
+        'gradient_steps', 'grad_clipping', 'unroll_scan', 'only_return_final']
+    if isinstance(layer, lasagne.layers.BatchNormLayer):
+        return ['axes', 'epsilon', 'alpha']
+    if isinstance(layer, lasagne.layers.NonlinearityLayer):
+        return ['nonlinearity']
+    if isinstance(layer, lasagne.layers.DimshuffleLayer):
+        return ['pattern']
+    if isinstance(layer, lasagne.layers.Conv1DLayer):
+        return ['num_filters', 'filter_size', 'stride', 'pad',
+        'untie_biases', 'nonlinearity', 'flip_filters', 'convolution']
+    if isinstance(layer, DualCRFLayer):
+        return ['mask_input']
+    return []
+
+def get_hex_color(layer_classname):
     """
     Determines the hex color for a layer. Some classes are given
     default values, all others are calculated pseudorandomly
     from their name.
     :parameters:
-        - layer_type : string
+        - layer_classname : string
             Class name of the layer
 
     :returns:
@@ -41,19 +70,19 @@ def get_hex_color(layer_type):
         '#9D9DD2'
     """
 
-    if 'Input' in layer_type:
+    if 'Input' in layer_classname:
         return '#A2CECE'
-    if 'Conv' in layer_type:
+    if 'Conv' in layer_classname:
         return '#7C9ABB'
-    if 'Dense' in layer_type:
+    if 'Dense' in layer_classname:
         return '#6CCF8D'
-    if 'Pool' in layer_type:
+    if 'Pool' in layer_classname:
         return '#9D9DD2'
     else:
         # create a color from the hash of the class name, but make
         # sure that it is relatively bright, so add half of the class
         # name hash to #7F7F7F
-        layer_name_hash = (hash(layer_type) % 2**24) / 2
+        layer_name_hash = (hash(layer_classname) % 2**24) / 2
         return "#{0:x}".format(int(layer_name_hash + float.fromhex("7F7F7F")))
 
 
@@ -80,22 +109,25 @@ def get_pydot_graph(final_layer, output_shape=True, verbose=False):
     pydot_nodes = {}
     pydot_edges = []
     for i, layer in enumerate(layers):
-        layer_type = '{0}'.format(layer.__class__.__name__)
+        layer_classname = '{0}'.format(layer.__class__.__name__)
         key = repr(layer)
-        label = layer_type
-        color = get_hex_color(layer_type)
+        label = layer_classname
+        color = get_hex_color(layer_classname)
         if verbose:
-            for attr in ['name', 'num_filters', 'num_units', 'ds',
-                         'filter_shape', 'stride', 'strides', 'p']:
-                if hasattr(layer, attr) and getattr(layer, attr) is not None:
-                    label += '\n' + \
-                        '{0}: {1}'.format(attr, getattr(layer, attr))
-            if hasattr(layer, 'nonlinearity'):
-                try:
-                    nonlinearity = layer.nonlinearity.__name__
-                except AttributeError:
-                    nonlinearity = layer.nonlinearity.__class__.__name__
-                label += '\n' + 'nonlinearity: {0}'.format(nonlinearity)
+            general_attributes = get_general_attributes()
+            class_attributes = get_class_attributes(layer)
+            for attr_name in (general_attributes + class_attributes):
+                if hasattr(layer, attr_name):
+                    attr_value = getattr(layer, attr_name)
+                    # the names of callables need to be read in a different way
+                    if hasattr(attr_value, "__call__"): # Python 3 style of checking for callables; see: https://stackoverflow.com/a/2435074/2191154
+                        try:
+                            callable_name= attr_value.__name__
+                        except AttributeError:
+                            callable_name = attr_value.__class__.__name__
+                        label += '\n' + '{0}: {1}'.format(attr_name, callable_name)
+                    else:
+                        label += '\n' + '{0}: {1}'.format(attr_name, attr_value)
 
         if output_shape:
             label += '\n' + \
