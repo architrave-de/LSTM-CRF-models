@@ -120,7 +120,7 @@ def setup_NN(worker, x_in, u_in, mask_in, y_in, params, numTags, emb_w):
     logger.info("output sum for for unary mid layer {0}".format(np.sum(mid_output(
         x_in.astype('int32'), u_in.astype('float32'), mask_in.astype('float32'))[0, :, :], axis=1)))
 
-    sum_layer = DualCRFLayer([crf_layer, pairwise, l_mask], mask_input=True)
+    sum_layer = DualCRFLayer([crf_layer, pairwise, l_mask], mask_input=True, name="sum_layer")
 
     unaryPotential = lasagne.layers.get_output(crf_layer, deterministic=False)
     outp = lasagne.layers.get_output(sum_layer, deterministic=False)

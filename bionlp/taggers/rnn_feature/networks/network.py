@@ -78,9 +78,9 @@ def setup_NN(worker, x_in, u_in, mask_in, y_in, params, numTags, emb_w):
     dropout_forward = lasagne.layers.DropoutLayer(l_emb, params['noise1'], name="dropout_forward")
 
     backward1 = lasagne.layers.LSTMLayer(dropout_backward, params['hidden1'], mask_input=l_mask, peepholes=False, forgetgate=lasagne.layers.Gate(
-        b=lasagne.init.Constant(1.)), nonlinearity=lasagne.nonlinearities.tanh, backwards=True, precompute_input=True)
+        b=lasagne.init.Constant(1.)), nonlinearity=lasagne.nonlinearities.tanh, backwards=True, precompute_input=True, name="backward1")
     forward1 = lasagne.layers.LSTMLayer(dropout_forward, params['hidden1'], mask_input=l_mask, peepholes=False, forgetgate=lasagne.layers.Gate(
-        b=lasagne.init.Constant(1.)), nonlinearity=lasagne.nonlinearities.tanh, precompute_input=True)
+        b=lasagne.init.Constant(1.)), nonlinearity=lasagne.nonlinearities.tanh, precompute_input=True, name="forward1")
 
     crf_layer = lasagne.layers.ConcatLayer([forward1, backward1], axis=2, name="crf_layer")
 
