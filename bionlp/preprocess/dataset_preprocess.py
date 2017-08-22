@@ -1,14 +1,12 @@
-
-
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 from tqdm import tqdm
-from bionlp.data.token import Token as Token
-from bionlp.data.sentence import Sentence as Sentence
-from bionlp.data.document import Document as Document
-from bionlp.data.dataset import Dataset as Dataset
+from bionlp.data.token import Token
+from bionlp.data.sentence import Sentence
+from bionlp.data.document import Document
+from bionlp.data.dataset import Dataset
 
 
 def encode_data_format(documents, raw_text, umls_params, sentence_limit=0, label_blacklist=[]):
