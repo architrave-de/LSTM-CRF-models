@@ -94,13 +94,12 @@ def main(config_params):
     # loading data sources from dependency json
     datas = {}
     if os.path.isfile('dependency.json'):
-        datas = json.load(open('dependency.json', 'r'))
+        with open('dependency.json', 'r') as filehandle:
+            datas = json.loads(filehandle.read())
 
     config_params['dependency'] = datas
     config_params['trainable'] = True
     # Using hardcoded dataset percentage
     config_params['dataset_percentage'] = 100
-    print("Using the parameters :")
-    print(json.dumps(config_params, indent=2))
-
+    logger.info("Using configuration parameters:\n" + json.dumps(config_params, indent=2))
     trainer(config_params)

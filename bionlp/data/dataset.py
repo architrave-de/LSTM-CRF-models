@@ -12,6 +12,6 @@ class Dataset:
         self.attr = {}
 
     def __str__(self):
-        s = "Dataset description = {0}\n active Attributes {1}, passive Attributes {2}, delayed attributes {3} , Number of Documents {4}".format(
+        s = "Dataset description = {0}\n active Attributes {1}, passive Attributes {2}, delayed attributes {3}, Number of Documents {4}".format(
             self.description, self.active, self.passive, self.delayed, self.value.__len__())
         return s

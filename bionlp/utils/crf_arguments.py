@@ -53,7 +53,7 @@ def default_arguments():
                              'Default is 0. 0:off 1: extra file -1: All available')
     parser.add_argument('-model', '--model', dest='model', type=str, default='None',
                         help='location of parameter pickle output in a file. default None')
-    parser.add_argument('-sim', '--save-interval-mins', dest='save-interval-mins', type=int, default='20',
+    parser.add_argument('-sim', '--save-interval-mins', dest='save-interval-mins', type=int, default=20,
                         help='Time interval in minutes after which the trained network parameters are automatically '
                              'saved to the given model file. If 0, no automatic saving takes place, but the parameters '
                              'are still saved to the model file after training has concluded. Default 20.')
