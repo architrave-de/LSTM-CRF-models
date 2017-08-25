@@ -163,7 +163,11 @@ def evaluate_neuralnet(lstm_output, X_test, mask_test, y_test, i2t, i2w, params,
         z_test = mask_test
     logger.info(('Mask len test', len(mask_test)))
 
-    predicted = predicted_sent = label = label_sent = original_sent =[]
+    predicted = []
+    predicted_sent = []
+    label = []
+    label_sent = []
+    original_sent = []
     for indx, (x_i, m_i, y_i, z_i) in enumerate(
             iterate_minibatches(X_test, mask_test, y_test, params['batch-size'], z_test)):
         for sent_ind, m_ind in enumerate(m_i):
@@ -182,6 +186,7 @@ def evaluate_neuralnet(lstm_output, X_test, mask_test, y_test, i2t, i2w, params,
         m_if = m_i.flatten()
         label += np.argmax(y_i, axis=2).flatten()[m_if == 1].tolist()
         predicted += np.argmax(y_p, axis=2).flatten()[m_if == 1].tolist()
+
     res = get_Approx_Metrics([i2t[l] for l in label],
                              [i2t[l] for l in predicted],
                              verbose=verbose, pre_msg='NN:', flat_list=True)
