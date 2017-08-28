@@ -3,8 +3,11 @@ import pickle
 import os
 import numpy as np
 from time import gmtime, strftime
+import lasagne
+import logging
 
 
+sl = logging.getLogger(__name__)
 SOURCE_DIR = "data/logs"
 
 
@@ -67,6 +70,21 @@ def read_confusion_matrix_values(confusion_matrix):
     return tags, matrix
 
 
+def save_net_params_if_necessary(netd, params, w2i, t2i, umls_v):
+    if 'final_layers' in netd and params['model'] is not 'None' and params['trainable'] is True:
+        nn_values = lasagne.layers.get_all_param_values(netd['final_layers'])
+        sl.info('Saving NN param values to {0}'.format(params['model']))
+        relevant_params = dict(params)
+        del relevant_params['dependency']
+        nn_packet = {'params': relevant_params, 'nn': nn_values,
+                     'w2i': w2i, 't2i': t2i, 'umls_vocab': umls_v}
+        pickle.dump(nn_packet, open(params['model'], 'wb'))
 
 
+def store_response(o, l, p, params, filename='response.pkl'):
+    sl.info("Storing responses in {0}".format(filename))
+    pickle.dump((params, o, l, p), open(filename, 'wb'))
 
+
+def update_monitoring(data, filename='monitor.pkl'):
+    pickle.dump(data, open(filename, 'wb'))
